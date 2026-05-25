@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gerenciamento — LavaJato</title>
+<meta name="description" content="Sistema de gerenciamento para lava-jato." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --navy-950:#0A1A33; --navy-900:#0F2547; --navy-800:#163161;
+  --gold-500:#D4AF37; --gold-400:#F5C542;
+  --card:#1A2C50;
+  --white:#fff; --w60:rgba(255,255,255,.6); --w50:rgba(255,255,255,.5); --w40:rgba(255,255,255,.4); --w30:rgba(255,255,255,.3); --w10:rgba(255,255,255,.1); --w05:rgba(255,255,255,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--navy-950);color:var(--white);font-family:'Inter',-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+h1,h2,h3,h4{font-family:'Sora',sans-serif;letter-spacing:-0.02em;font-weight:800}
+.mono{font-family:'JetBrains Mono',monospace}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;color:var(--white);background:var(--w05);border:1px solid var(--w10);border-radius:10px;padding:12px 14px;width:100%;outline:none;font-size:14px;color-scheme:dark}
+input:focus,select:focus,textarea:focus{border-color:rgba(212,175,55,.5);box-shadow:0 0 0 3px rgba(212,175,55,.15)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:400;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--w30);text-transform:uppercase;letter-spacing:.15em;padding:14px 16px;border-bottom:1px solid var(--w05)}
+td{padding:14px 16px;border-bottom:1px solid var(--w05)}
+tr:hover td{background:var(--w05)}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:50;background:rgba(10,26,51,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--w05);padding:16px 24px}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.logo{font-family:'Sora';font-weight:800;font-size:20px;letter-spacing:-.02em;text-transform:uppercase;font-style:italic}
+.logo .a{color:var(--gold-400)} .logo .b{font-style:normal}
+.nav-links{display:none;gap:24px;font-size:14px;font-weight:500}
+@media(min-width:768px){.nav-links{display:flex}}
+.nav-link{color:var(--w60);transition:color .2s}
+.nav-link:hover,.nav-link.active{color:var(--white)}
+.btn-gold{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;background:var(--gold-500);color:var(--navy-950);font-weight:600;border-radius:10px;font-size:13px;transition:all .2s;box-shadow:0 0 20px rgba(212,175,55,.2)}
+.btn-gold:hover{background:var(--gold-400);box-shadow:0 0 30px rgba(212,175,55,.3)}
+.btn-gold-lg{padding:16px 32px;font-size:15px;font-weight:700;border-radius:14px}
+.btn-ghost{display:inline-flex;align-items:center;padding:16px 32px;background:var(--w05);border:1px solid var(--w10);color:var(--white);font-weight:700;border-radius:14px;transition:all .2s}
+.btn-ghost:hover{background:var(--w10)}
+.btn-sm{padding:6px 10px;font-size:12px;border-radius:6px}
+
+/* COMPONENTS */
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.card{background:var(--card);border:1px solid var(--w05);border-radius:18px;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+.card-pad{padding:32px}
+.card-title{font-size:12px;font-family:'JetBrains Mono';color:var(--w50);text-transform:uppercase;letter-spacing:.2em;font-weight:800;margin-bottom:24px}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.25);border-radius:999px;margin-bottom:24px}
+.badge .dot{width:8px;height:8px;background:var(--gold-500);border-radius:50%;animation:pulse 2s infinite}
+.badge .txt{font-size:10px;font-family:'JetBrains Mono';text-transform:uppercase;letter-spacing:.2em;color:var(--gold-400);font-weight:500}
+
+/* HERO */
+.hero{padding:48px 0 80px;border-bottom:1px solid var(--w05)}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:48px;align-items:center}
+@media(min-width:768px){.hero-grid{grid-template-columns:1fr 1fr}}
+.hero h1{font-size:clamp(40px,7vw,80px);line-height:.9;margin-bottom:24px}
+.gold{color:var(--gold-400)}
+.hero p{font-size:18px;color:var(--w50);max-width:45ch;margin-bottom:40px;line-height:1.5}
+.hero-actions{display:flex;flex-wrap:wrap;gap:16px}
+.hero-art{position:relative;width:100%;aspect-ratio:1.2/1;border-radius:20px;border:1px solid var(--w10);overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(60% 50% at 70% 30%,rgba(212,175,55,.3),transparent 70%),radial-gradient(40% 40% at 30% 70%,rgba(22,49,97,.6),transparent 70%),linear-gradient(135deg,#0F2547 0%,#163161 60%,#0A1A33 100%);box-shadow:0 20px 60px -20px rgba(0,0,0,.6)}
+.hero-art svg{width:80%;height:80%;filter:drop-shadow(0 20px 30px rgba(0,0,0,.5))}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:640px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1024px){.kpi-grid-3{grid-template-columns:repeat(3,1fr)} .kpi-grid-4{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--card);border:1px solid var(--w05);border-radius:18px;padding:24px;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+.kpi-label{font-size:11px;font-family:'JetBrains Mono';color:var(--w40);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px}
+.kpi-value{font-family:'Sora';font-weight:800;font-size:36px;letter-spacing:-.02em}
+.kpi-value.accent{color:var(--gold-400)}
+
+/* PAGE */
+.page{padding:48px 0}
+.page-head{margin-bottom:32px}
+.page-head h1{font-size:32px;margin-bottom:8px}
+.page-head p{color:var(--w50)}
+.page-head-row{display:flex;flex-direction:column;gap:16px;justify-content:space-between;align-items:flex-start;margin-bottom:40px}
+@media(min-width:768px){.page-head-row{flex-direction:row;align-items:flex-end}}
+.filters{display:flex;flex-wrap:wrap;gap:12px}
+.filters input,.filters select{width:auto;background:var(--card);padding:10px 14px;font-size:13px}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:768px){.form-grid{grid-template-columns:1fr 1fr}}
+.field{display:block}
+.field label{display:block;font-size:11px;font-family:'JetBrains Mono';color:var(--w50);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.btn-row{display:flex;gap:12px;padding-top:8px}
+
+/* BAR */
+.bar-row{margin-bottom:24px}
+.bar-head{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:8px}
+.bar-head .v{color:var(--gold-400)}
+.bar{height:8px;background:var(--navy-950);border-radius:999px;overflow:hidden;border:1px solid var(--w05)}
+.bar-fill{height:100%;background:var(--gold-500);box-shadow:0 0 10px rgba(212,175,55,.4);transition:width .4s}
+.bar-foot{display:flex;justify-content:space-between;font-size:10px;font-family:'JetBrains Mono';color:var(--w50);margin-top:6px;text-transform:uppercase;letter-spacing:.1em}
+.bar-foot .v{color:var(--gold-400)}
+
+/* DASH GRID */
+.dash-grid{display:grid;grid-template-columns:1fr;gap:32px}
+@media(min-width:1024px){.dash-grid{grid-template-columns:1fr 2fr}}
+
+/* SERVICE TABLE */
+.svc-card{background:var(--card);border:1px solid var(--w05);border-radius:18px;overflow:hidden;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+.svc-head{padding:20px 32px;border-bottom:1px solid var(--w05);display:flex;justify-content:space-between;align-items:center}
+.svc-head h3{font-size:12px;font-family:'JetBrains Mono';color:var(--w50);text-transform:uppercase;letter-spacing:.2em;font-weight:800}
+.svc-count{font-size:12px;font-family:'JetBrains Mono';color:var(--w40)}
+.scroll-x{overflow-x:auto}
+.placa{font-family:'JetBrains Mono';font-weight:500}
+.val-gold{text-align:right;font-weight:700;color:var(--gold-400)}
+.porte-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--w10);border:1px solid var(--w10)}
+.muted{color:var(--w60)}
+
+/* ACTIONS */
+.actions{display:flex;gap:8px;justify-content:flex-end}
+.act-fin{background:rgba(16,185,129,.2);color:#6ee7b7}
+.act-fin:hover{background:rgba(16,185,129,.3)}
+.act-edit{background:var(--w10)}
+.act-edit:hover{background:var(--w10)}
+.act-del{background:rgba(239,68,68,.2);color:#fca5a5}
+.act-del:hover{background:rgba(239,68,68,.3)}
+.pending{color:#fbbf24}
+
+/* TIPOS GRID */
+.tipos-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px}
+@media(min-width:768px){.tipos-grid{grid-template-columns:1fr 1fr}}
+.tipo-item{display:flex;justify-content:space-between;align-items:center;background:var(--w05);padding:14px 18px;border-radius:10px;border:1px solid var(--w05)}
+.tipo-item .v{color:var(--gold-400);font-weight:700;font-family:'JetBrains Mono'}
+
+/* CONFIG */
+.cfg-row{display:flex;align-items:center;gap:12px;padding:14px;border-radius:10px;background:rgba(255,255,255,.02);transition:background .2s}
+.cfg-row:hover{background:rgba(255,255,255,.05)}
+.cfg-row + .cfg-row{margin-top:8px}
+.cfg-row .name{flex:1;font-weight:500}
+.cfg-row .val{width:130px;text-align:right;color:var(--gold-400);font-family:'JetBrains Mono';font-weight:700}
+.icon-btn{padding:8px;border-radius:8px;transition:background .2s;font-size:16px}
+.icon-btn:hover{background:var(--w10)}
+.icon-btn.del:hover{background:rgba(239,68,68,.2);color:#fca5a5}
+.add-form{display:grid;gap:12px;padding:16px;background:var(--w05);border:1px solid var(--w10);border-radius:14px;margin-bottom:20px}
+@media(min-width:640px){.add-form.tipo{grid-template-columns:1fr 160px auto} .add-form.exec{grid-template-columns:1fr auto}}
+.add-form .row{display:flex;gap:8px}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal-content{background:var(--card);padding:28px;border-radius:18px;border:1px solid var(--w10);width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:20px;font-family:'Sora';font-weight:700;margin-bottom:16px}
+.modal .field{margin-bottom:12px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:16px}
+.btn-cancel{padding:10px 18px;background:var(--w05);border:1px solid var(--w10);border-radius:10px}
+
+/* TOAST */
+.toast{position:fixed;top:80px;right:24px;z-index:200;padding:14px 18px;border-radius:12px;border:1px solid;backdrop-filter:blur(8px);font-size:14px;font-weight:500;animation:slideIn .3s ease-out}
+.toast.success{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.4);color:#a7f3d0}
+.toast.error{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:#fecaca}
+
+/* ANIMS */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.fade-in{animation:fadeIn .5s cubic-bezier(0.19,1,0.22,1) both}
+
+.hidden{display:none !important}
+.empty{padding:32px;text-align:center;color:var(--w40)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" data-route="inicio" class="logo"><span class="a">Lava</span><span class="b">Jato</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="#" data-route="inicio" class="nav-link">Início</a>
+      <a href="#" data-route="cadastro" class="nav-link">Cadastro</a>
+      <a href="#" data-route="servicos" class="nav-link">Serviços</a>
+      <a href="#" data-route="dashboard" class="nav-link">Dashboard</a>
+      <a href="#" data-route="config" class="nav-link">Configurações</a>
+    </div>
+    <a href="#" data-route="cadastro" class="btn-gold">Novo Serviço</a>
+  </div>
+</nav>
+
+<div id="app"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://fetodeiuygdrxdzkegcr.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldG9kZWl1eWdkcnhkemtlZ2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzMxOTQsImV4cCI6MjA5NTIwOTE5NH0.spqQUe7FAFrvE5kS-oVz7HL8vXftJ9LV81yK5LP76_0";
+let sb = null;
+function initSb(){ if(!sb && window.supabase){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } return sb; }
+
+const brl = n => Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const today = () => new Date().toISOString().slice(0,10);
+const currentMonth = () => new Date().toISOString().slice(0,7);
+const nowTime = () => { const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+const monthRange = m => { const [y,mo]=m.split('-').map(Number); return {from:`${m}-01`, to:new Date(y,mo,0).toISOString().slice(0,10)}; };
+const monthLabel = m => { const [y,mo]=m.split('-').map(Number); return new Date(y,mo-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}); };
+const diffMin = (he,hs) => { if(!he||!hs) return null; const [h1,m1]=he.split(':').map(Number); const [h2,m2]=hs.split(':').map(Number); return (h2*60+m2)-(h1*60+m1); };
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const escAttr = s => esc(s);
+
+function toast(msg, type='success'){
+  const old = document.querySelector('.toast'); if(old) old.remove();
+  const t = document.createElement('div'); t.className = 'toast '+type; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(), 3000);
+}
+
+async function fetchServicos(range){
+  if(!initSb()) return [];
+  let q = sb.from('servicos').select('*').order('data',{ascending:false}).order('hora_entrada',{ascending:false});
+  if(range?.from) q = q.gte('data', range.from);
+  if(range?.to) q = q.lte('data', range.to);
+  const {data,error} = await q;
+  if(error){ toast(error.message,'error'); return []; }
+  return data||[];
+}
+async function fetchTipos(){ if(!initSb()) return []; const {data,error}=await sb.from('tipos_servico').select('*').order('nome'); if(error){toast(error.message,'error');return[]} return data||[]; }
+async function fetchExecutores(){ if(!initSb()) return []; const {data,error}=await sb.from('executores').select('*').order('nome'); if(error){toast(error.message,'error');return[]} return data||[]; }
+
+const routes = { inicio:renderInicio, cadastro:renderCadastro, servicos:renderServicos, dashboard:renderDashboard, config:renderConfig };
+function navigate(route){
+  document.querySelectorAll('#nav-links .nav-link').forEach(a=>a.classList.toggle('active', a.dataset.route===route));
+  (routes[route]||renderInicio)();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.nav [data-route]').forEach(el=>{
+  el.addEventListener('click', e=>{ e.preventDefault(); navigate(el.dataset.route); });
+});
+
+function kpiCard(label, value, accent){
+  return `<div class="kpi fade-in">
+    <div class="kpi-label">${esc(label)}</div>
+    <div class="kpi-value ${accent?'accent':''}">${esc(value)}</div>
+  </div>`;
+}
+
+// ============ INICIO ============
+async function renderInicio(){
+  document.getElementById('app').innerHTML = `
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="fade-in">
+          <div class="badge"><span class="dot"></span><span class="txt">Gestão Premium Ativa</span></div>
+          <h1>Brilho impecável,<br/><span class="gold">gestão absoluta.</span></h1>
+          <p>O sistema definitivo para o seu lava-jato: cadastre serviços, acompanhe o tempo de execução, calcule comissões e visualize o faturamento por mês.</p>
+          <div class="hero-actions">
+            <a href="#" data-go="cadastro" class="btn-gold btn-gold-lg">Iniciar Expediente</a>
+            <a href="#" data-go="dashboard" class="btn-ghost">Ver Dashboard</a>
+          </div>
+        </div>
+        <div class="fade-in">
+          <div class="hero-art">
+            <svg viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="cb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b6fa0"/><stop offset="1" stop-color="#0F2547"/></linearGradient>
+                <linearGradient id="sh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F5C542" stop-opacity="0"/><stop offset=".5" stop-color="#F5C542" stop-opacity=".7"/><stop offset="1" stop-color="#F5C542" stop-opacity="0"/></linearGradient>
+              </defs>
+              <ellipse cx="200" cy="285" rx="160" ry="10" fill="rgba(0,0,0,.5)"/>
+              <path d="M60 220 Q60 170 110 160 L160 130 Q190 115 230 115 L270 115 Q300 115 320 140 L350 175 Q360 180 365 195 L370 220 Q370 245 345 245 L75 245 Q60 245 60 220 Z" fill="url(#cb)" stroke="#D4AF37" stroke-width="1.5"/>
+              <path d="M170 135 Q190 125 220 125 L260 125 Q280 125 295 145 L310 170 L165 170 Z" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+              <rect x="80" y="180" width="280" height="6" fill="url(#sh)" opacity=".8"/>
+              <circle cx="115" cy="245" r="28" fill="#0A1A33" stroke="#D4AF37" stroke-width="2"/>
+              <circle cx="115" cy="245" r="12" fill="#163161"/>
+              <circle cx="305" cy="245" r="28" fill="#0A1A33" stroke="#D4AF37" stroke-width="2"/>
+              <circle cx="305" cy="245" r="12" fill="#163161"/>
+              <circle cx="90" cy="80" r="3" fill="#fff" opacity=".7"/>
+              <circle cx="130" cy="60" r="2" fill="#F5C542" opacity=".9"/>
+              <circle cx="280" cy="55" r="4" fill="#fff" opacity=".6"/>
+              <circle cx="340" cy="85" r="2" fill="#F5C542" opacity=".8"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="container" style="padding:64px 24px">
+      <div class="kpi-grid kpi-grid-3" id="kpi-top"></div>
+      <div class="kpi-grid" style="margin-top:32px;grid-template-columns:1fr 1fr" id="kpi-bottom"></div>
+    </section>
+  </main>`;
+  document.querySelectorAll('[data-go]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();navigate(a.dataset.go);}));
+
+  const t=today(), m=currentMonth();
+  const [hoje,mes] = await Promise.all([fetchServicos({from:t,to:t}), fetchServicos(monthRange(m))]);
+  const fH = hoje.reduce((s,x)=>s+Number(x.valor),0);
+  const fM = mes.reduce((s,x)=>s+Number(x.valor),0);
+  const tps = hoje.map(s=>diffMin(s.hora_entrada,s.hora_saida)).filter(n=>n!=null);
+  const tm = tps.length?Math.round(tps.reduce((a,b)=>a+b,0)/tps.length):0;
+  document.getElementById('kpi-top').innerHTML = kpiCard('Serviços Hoje',String(hoje.length)) + kpiCard('Faturamento Hoje',brl(fH),true) + kpiCard('Tempo Médio Hoje',tm+' min');
+  document.getElementById('kpi-bottom').innerHTML = kpiCard('Faturamento do mês',brl(fM),true) + kpiCard('Comissão dos lavadores (40%)',brl(fM*0.4));
+}
+
+// ============ CADASTRO ============
+async function renderCadastro(){
+  document.getElementById('app').innerHTML = `
+  <main class="container page" style="max-width:760px">
+    <div class="page-head"><h1>Cadastrar Serviço</h1><p>Registre uma nova entrada de veículo.</p></div>
+    <form id="form-cad" class="card card-pad" style="display:flex;flex-direction:column;gap:20px">
+      <div class="form-grid">
+        <div class="field"><label>Nome do Cliente *</label><input name="cliente_nome" required></div>
+        <div class="field"><label>Telefone</label><input name="telefone" placeholder="(00) 00000-0000"></div>
+        <div class="field"><label>Placa do Carro *</label><input name="placa" required placeholder="ABC-1234" style="text-transform:uppercase"></div>
+        <div class="field"><label>Porte do Veículo</label><select name="porte"><option>Pequeno</option><option selected>Médio</option><option>Grande</option></select></div>
+        <div class="field"><label>Data</label><input type="date" name="data" value="${today()}"></div>
+        <div class="field"><label>Hora de Entrada</label><input type="time" name="hora_entrada" value="${nowTime()}"></div>
+        <div class="field"><label>Hora de Finalização (opcional)</label><input type="time" name="hora_saida"></div>
+        <div class="field"><label>Executor *</label><select id="sel-exec" name="executor_nome" required><option value="">Carregando…</option></select></div>
+        <div class="field"><label>Tipo de Serviço *</label><select id="sel-tipo" required><option value="">Carregando…</option></select></div>
+        <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" name="valor" id="inp-valor" value="0"></div>
+      </div>
+      <div id="outros-wrap" class="hidden field"><label>Nome do serviço personalizado</label><input name="tipo_outros"></div>
+      <div class="field"><label>Observação</label><textarea name="observacao" rows="3"></textarea></div>
+      <div class="btn-row"><button type="submit" class="btn-gold btn-gold-lg">Cadastrar Serviço</button></div>
+    </form>
+  </main>`;
+
+  const [tipos,execs] = await Promise.all([fetchTipos(), fetchExecutores()]);
+  const selT = document.getElementById('sel-tipo');
+  selT.innerHTML = `<option value="">Selecione…</option>` + tipos.map(t=>`<option value="${escAttr(t.nome)}" data-valor="${t.valor}">${esc(t.nome)} — R$ ${Number(t.valor).toFixed(2)}</option>`).join('') + `<option value="__outros__">Outros (definir)</option>`;
+  document.getElementById('sel-exec').innerHTML = `<option value="">Selecione…</option>` + execs.map(e=>`<option>${esc(e.nome)}</option>`).join('');
+
+  selT.addEventListener('change', e=>{
+    const v=e.target.value, wrap=document.getElementById('outros-wrap'), vi=document.getElementById('inp-valor');
+    if(v==='__outros__'){ wrap.classList.remove('hidden'); vi.value=0; }
+    else { wrap.classList.add('hidden'); vi.value = e.target.selectedOptions[0]?.dataset.valor||0; }
+  });
+
+  document.getElementById('form-cad').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const tipoSel = selT.value;
+    const tipo_servico_nome = tipoSel==='__outros__' ? fd.get('tipo_outros') : tipoSel;
+    if(!tipo_servico_nome){ toast('Informe o tipo de serviço','error'); return; }
+    const payload = {
+      cliente_nome: fd.get('cliente_nome'), telefone: fd.get('telefone')||null,
+      placa: String(fd.get('placa')).toUpperCase(), porte: fd.get('porte'),
+      data: fd.get('data'), hora_entrada: fd.get('hora_entrada'), hora_saida: fd.get('hora_saida')||null,
+      tipo_servico_nome, valor: Number(fd.get('valor')),
+      executor_nome: fd.get('executor_nome'), observacao: fd.get('observacao')||null,
+    };
+    const {error} = await sb.from('servicos').insert(payload);
+    if(error){ toast(error.message,'error'); return; }
+    toast('Serviço cadastrado!');
+    navigate('servicos');
+  });
+}
+
+// ============ SERVIÇOS ============
+async function renderServicos(){
+  document.getElementById('app').innerHTML = `
+  <main class="container page">
+    <div class="page-head"><h1>Serviços</h1><p>Histórico completo de serviços registrados.</p></div>
+    <div class="svc-card">
+      <div class="scroll-x"><table>
+        <thead><tr>
+          <th>Data</th><th>Cliente</th><th>Placa</th><th>Porte</th><th>Serviço</th><th>Executor</th><th>Tempo</th>
+          <th style="text-align:right">Valor</th><th style="text-align:right">Ações</th>
+        </tr></thead>
+        <tbody id="tb"><tr><td colspan="9" class="empty">Carregando…</td></tr></tbody>
+      </table></div>
+    </div>
+  </main>
+  <div id="modal" class="hidden"></div>`;
+
+  const servicos = await fetchServicos();
+  const tb = document.getElementById('tb');
+  if(servicos.length===0){ tb.innerHTML = `<tr><td colspan="9" class="empty">Nenhum serviço cadastrado ainda.</td></tr>`; return; }
+  tb.innerHTML = servicos.map(s=>{
+    const d = diffMin(s.hora_entrada, s.hora_saida);
+    const tempo = d!=null?`${d} min`:`<span class="pending">em andamento</span>`;
+    return `<tr>
+      <td>${new Date(s.data).toLocaleDateString('pt-BR')}</td>
+      <td><div style="font-weight:600">${esc(s.cliente_nome)}</div><div style="font-size:10px;color:var(--w40)">${esc(s.telefone||'')}</div></td>
+      <td class="placa">${esc(s.placa)}</td>
+      <td><span class="porte-badge">${esc(s.porte[0])}</span></td>
+      <td>${esc(s.tipo_servico_nome)}</td>
+      <td class="muted">${esc(s.executor_nome)}</td>
+      <td class="muted">${tempo}</td>
+      <td class="val-gold">${brl(s.valor)}</td>
+      <td style="text-align:right"><div class="actions">
+        ${!s.hora_saida?`<button data-fin="${s.id}" class="btn-sm act-fin">Finalizar</button>`:''}
+        <button data-edit='${escAttr(JSON.stringify(s))}' class="btn-sm act-edit">Editar</button>
+        <button data-del="${s.id}" class="btn-sm act-del">Excluir</button>
+      </div></td></tr>`;
+  }).join('');
+
+  tb.querySelectorAll('[data-fin]').forEach(b=>b.onclick=async()=>{
+    const {error}=await sb.from('servicos').update({hora_saida:nowTime()}).eq('id',b.dataset.fin);
+    if(error) return toast(error.message,'error'); toast('Serviço finalizado!'); renderServicos();
+  });
+  tb.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
+    if(!confirm('Excluir este serviço?')) return;
+    const {error}=await sb.from('servicos').delete().eq('id',b.dataset.del);
+    if(error) return toast(error.message,'error'); toast('Excluído.'); renderServicos();
+  });
+  tb.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEdit(JSON.parse(b.dataset.edit)));
+}
+
+function openEdit(s){
+  const m = document.getElementById('modal');
+  m.classList.remove('hidden'); m.className='modal';
+  m.innerHTML = `<div class="modal-content">
+    <h2>Editar Serviço</h2>
+    ${['cliente_nome','telefone','placa','tipo_servico_nome','executor_nome'].map(k=>`
+      <div class="field"><label>${k.replace(/_/g,' ')}</label><input data-k="${k}" value="${escAttr(s[k]??'')}"></div>`).join('')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field"><label>Porte</label><select data-k="porte">${['Pequeno','Médio','Grande'].map(p=>`<option ${s.porte===p?'selected':''}>${p}</option>`).join('')}</select></div>
+      <div class="field"><label>Valor</label><input data-k="valor" type="number" step="0.01" value="${s.valor}"></div>
+      <div class="field"><label>Hora Saída</label><input data-k="hora_saida" type="time" value="${s.hora_saida||''}"></div>
+    </div>
+    <div class="modal-actions"><button id="bc" class="btn-cancel">Cancelar</button><button id="bs" class="btn-gold">Salvar</button></div>
+  </div>`;
+  m.onclick = e=>{ if(e.target===m) m.classList.add('hidden'); };
+  m.querySelector('#bc').onclick=()=>m.classList.add('hidden');
+  m.querySelector('#bs').onclick=async()=>{
+    const patch={}; m.querySelectorAll('[data-k]').forEach(el=>{ patch[el.dataset.k] = el.dataset.k==='valor'?Number(el.value):(el.value||null); });
+    const {error}=await sb.from('servicos').update(patch).eq('id',s.id);
+    if(error) return toast(error.message,'error'); toast('Atualizado!'); m.classList.add('hidden'); renderServicos();
+  };
+}
+
+// ============ DASHBOARD ============
+async function renderDashboard(){
+  const m = currentMonth();
+  document.getElementById('app').innerHTML = `
+  <main class="container page">
+    <div class="page-head-row">
+      <div><h1>Dashboard Gerencial</h1><p class="muted" id="dl" style="text-transform:capitalize">${monthLabel(m)}</p></div>
+      <div class="filters">
+        <input type="month" id="dm" value="${m}">
+        <select id="de"><option value="">Todos executores</option></select>
+      </div>
+    </div>
+    <div class="kpi-grid kpi-grid-4" id="dk" style="margin-bottom:40px"></div>
+    <div class="dash-grid">
+      <div class="card card-pad">
+        <div class="card-title">Performance por Executor</div>
+        <div id="del"></div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-head"><h3>Serviços do mês</h3><span class="svc-count" id="dc">0 registros</span></div>
+        <div class="scroll-x"><table>
+          <thead><tr><th>Data</th><th>Cliente</th><th>Placa</th><th>Serviço</th><th>Executor</th><th style="text-align:right">Valor</th></tr></thead>
+          <tbody id="dtb"></tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="card card-pad" style="margin-top:32px">
+      <div class="card-title">Distribuição por Tipo de Serviço</div>
+      <div id="dt"></div>
+    </div>
+  </main>`;
+
+  async function load(){
+    const mes = document.getElementById('dm').value, ef = document.getElementById('de').value;
+    document.getElementById('dl').textContent = monthLabel(mes);
+    const all = await fetchServicos(monthRange(mes));
+    const data = ef ? all.filter(s=>s.executor_nome===ef) : all;
+    const fat = data.reduce((s,x)=>s+Number(x.valor),0);
+    const tps = data.map(s=>diffMin(s.hora_entrada,s.hora_saida)).filter(n=>n!=null);
+    const tm = tps.length?Math.round(tps.reduce((a,b)=>a+b,0)/tps.length):0;
+    document.getElementById('dk').innerHTML = kpiCard('Serviços Realizados',String(data.length)) + kpiCard('Faturamento',brl(fat),true) + kpiCard('Comissão (40%)',brl(fat*0.4),true) + kpiCard('Tempo Médio',tm+' min');
+
+    const map = new Map();
+    data.forEach(s=>{const c=map.get(s.executor_nome)??{count:0,total:0};c.count++;c.total+=Number(s.valor);map.set(s.executor_nome,c);});
+    const arr = Array.from(map).sort((a,b)=>b[1].total-a[1].total);
+    const max = Math.max(1,...arr.map(([,v])=>v.total));
+    document.getElementById('del').innerHTML = arr.length===0?'<p class="muted" style="font-size:14px">Sem dados no período.</p>':
+      arr.map(([n,v])=>`<div class="bar-row">
+        <div class="bar-head"><span>${esc(n)}</span><span class="v">${brl(v.total)} · ${v.count}</span></div>
+        <div class="bar"><div class="bar-fill" style="width:${(v.total/max)*100}%"></div></div>
+        <div class="bar-foot"><span>Comissão (40%)</span><span class="v">${brl(v.total*0.4)}</span></div>
+      </div>`).join('');
+
+    const eSel = document.getElementById('de'); const cur = eSel.value;
+    const allE = Array.from(new Set(all.map(s=>s.executor_nome))).sort();
+    eSel.innerHTML = '<option value="">Todos executores</option>' + allE.map(n=>`<option ${n===cur?'selected':''}>${esc(n)}</option>`).join('');
+
+    document.getElementById('dc').textContent = `${data.length} registros`;
+    document.getElementById('dtb').innerHTML = data.slice(0,50).map(s=>`<tr>
+      <td class="muted">${new Date(s.data).toLocaleDateString('pt-BR')}</td>
+      <td style="font-weight:600">${esc(s.cliente_nome)}</td>
+      <td class="placa">${esc(s.placa)}</td>
+      <td class="muted">${esc(s.tipo_servico_nome)}</td>
+      <td class="muted">${esc(s.executor_nome)}</td>
+      <td class="val-gold">${brl(s.valor)}</td>
+    </tr>`).join('') || `<tr><td colspan="6" class="empty">Sem registros</td></tr>`;
+
+    const tmap = new Map();
+    data.forEach(s=>tmap.set(s.tipo_servico_nome,(tmap.get(s.tipo_servico_nome)??0)+1));
+    const tarr = Array.from(tmap).sort((a,b)=>b[1]-a[1]);
+    document.getElementById('dt').innerHTML = tarr.length===0?'<p class="muted" style="font-size:14px">Sem dados no período.</p>':
+      `<div class="tipos-grid">${tarr.map(([n,c])=>`<div class="tipo-item"><span>${esc(n)}</span><span class="v">${c}</span></div>`).join('')}</div>`;
+  }
+  document.getElementById('dm').onchange = load;
+  document.getElementById('de').onchange = load;
+  load();
+}
+
+// ============ CONFIG ============
+async function renderConfig(){
+  document.getElementById('app').innerHTML = `
+  <main class="container page" style="max-width:900px">
+    <div class="page-head"><h1>Configurações</h1><p>Gerencie tipos de serviço e executores.</p></div>
+    <section class="card card-pad" style="background:var(--navy-900);margin-bottom:32px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h2 style="font-size:20px;font-weight:600">Tipos de Serviço</h2>
+        <button id="at" class="btn-gold">+ Cadastrar</button>
+      </div>
+      <div id="tf"></div><div id="tl"></div>
+    </section>
+    <section class="card card-pad" style="background:var(--navy-900)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h2 style="font-size:20px;font-weight:600">Executores</h2>
+        <button id="ae" class="btn-gold">+ Cadastrar</button>
+      </div>
+      <div id="ef"></div><div id="el"></div>
+    </section>
+  </main>`;
+
+  async function lt(){
+    const tipos = await fetchTipos();
+    document.getElementById('tl').innerHTML = tipos.length===0?'<p class="muted" style="font-size:14px">Nenhum tipo cadastrado.</p>':
+      tipos.map(t=>`<div class="cfg-row">
+        <div class="name">${esc(t.nome)}</div>
+        <div class="val">${brl(t.valor)}</div>
+        <button data-et='${escAttr(JSON.stringify(t))}' class="icon-btn">✏️</button>
+        <button data-dt="${t.id}" data-n="${escAttr(t.nome)}" class="icon-btn del">🗑️</button>
+      </div>`).join('');
+    document.querySelectorAll('[data-dt]').forEach(b=>b.onclick=async()=>{
+      if(!confirm(`Excluir "${b.dataset.n}"?`)) return;
+      const {error}=await sb.from('tipos_servico').delete().eq('id',b.dataset.dt);
+      if(error) return toast(error.message,'error'); toast('Excluído'); lt();
+    });
+    document.querySelectorAll('[data-et]').forEach(b=>b.onclick=async()=>{
+      const t=JSON.parse(b.dataset.et);
+      const nome=prompt('Nome:',t.nome); if(nome===null) return;
+      const valor=prompt('Valor:',t.valor); if(valor===null) return;
+      const {error}=await sb.from('tipos_servico').update({nome:nome.trim(),valor:Number(valor)}).eq('id',t.id);
+      if(error) return toast(error.message,'error'); toast('Atualizado'); lt();
+    });
+  }
+  async function le(){
+    const execs = await fetchExecutores();
+    document.getElementById('el').innerHTML = execs.length===0?'<p class="muted" style="font-size:14px">Nenhum executor cadastrado.</p>':
+      execs.map(e=>`<div class="cfg-row">
+        <div class="name">${esc(e.nome)}</div>
+        <button data-ee='${escAttr(JSON.stringify(e))}' class="icon-btn">✏️</button>
+        <button data-de="${e.id}" data-n="${escAttr(e.nome)}" class="icon-btn del">🗑️</button>
+      </div>`).join('');
+    document.querySelectorAll('[data-de]').forEach(b=>b.onclick=async()=>{
+      if(!confirm(`Excluir "${b.dataset.n}"?`)) return;
+      const {error}=await sb.from('executores').delete().eq('id',b.dataset.de);
+      if(error) return toast(error.message,'error'); toast('Excluído'); le();
+    });
+    document.querySelectorAll('[data-ee]').forEach(b=>b.onclick=async()=>{
+      const e=JSON.parse(b.dataset.ee);
+      const nome=prompt('Nome:',e.nome); if(nome===null) return;
+      const {error}=await sb.from('executores').update({nome:nome.trim()}).eq('id',e.id);
+      if(error) return toast(error.message,'error'); toast('Atualizado'); le();
+    });
+  }
+
+  document.getElementById('at').onclick=()=>{
+    const f=document.getElementById('tf');
+    f.innerHTML=`<div class="add-form tipo">
+      <input id="tn" placeholder="Nome do serviço">
+      <input id="tv" type="number" step="0.01" placeholder="Valor (R$)">
+      <div class="row"><button id="ts" class="btn-gold">Salvar</button><button id="tc" class="btn-cancel">Cancelar</button></div>
+    </div>`;
+    document.getElementById('tc').onclick=()=>f.innerHTML='';
+    document.getElementById('ts').onclick=async()=>{
+      const nome=document.getElementById('tn').value.trim(), v=Number(document.getElementById('tv').value);
+      if(!nome) return toast('Nome obrigatório','error');
+      const {error}=await sb.from('tipos_servico').insert({nome,valor:v});
+      if(error) return toast(error.message,'error'); toast('Tipo cadastrado'); f.innerHTML=''; lt();
+    };
+  };
+  document.getElementById('ae').onclick=()=>{
+    const f=document.getElementById('ef');
+    f.innerHTML=`<div class="add-form exec">
+      <input id="en" placeholder="Nome do executor">
+      <div class="row"><button id="es" class="btn-gold">Salvar</button><button id="ec" class="btn-cancel">Cancelar</button></div>
+    </div>`;
+    document.getElementById('ec').onclick=()=>f.innerHTML='';
+    document.getElementById('es').onclick=async()=>{
+      const nome=document.getElementById('en').value.trim();
+      if(!nome) return toast('Nome obrigatório','error');
+      const {error}=await sb.from('executores').insert({nome});
+      if(error) return toast(error.message,'error'); toast('Executor cadastrado'); f.innerHTML=''; le();
+    };
+  };
+
+  lt(); le();
+}
+
+// boot
+window.addEventListener('load', ()=>{ initSb(); navigate('inicio'); });
+if(document.readyState==='complete') { initSb(); navigate('inicio'); }
+</script>
+</body>
+</html>
